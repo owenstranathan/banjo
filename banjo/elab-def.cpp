@@ -204,5 +204,46 @@ Parser::elaborate_member_statement(Stmt& s)
   return s;
 }
 
+void
+Parser::elaborate_hierarchy(Type_decl& decl, Stmt &s)
+{
+  if(Member_stmt* s1 = &as<Member_stmt>(s))
+  {
+    for(auto && stmt : s1->stmts )
+    {
+      struct fn
+      {
+        Type_decl& decl;
+        Parser& p;
+        void operator()(Stmt& st) { lingo_unhandled(st); }
+        void operator()(Declaration_stmt& st) { p.elaborate_hierarchy(decl, st.declaration() ); }
+      };
+      apply(stmt, fn{decl, *this});
+
+    }
+  }
+}
+
+void
+Parser::elaborate_hierarchy(Type_decl& decl, Decl& d)
+{
+  struct fn
+  {
+    Type_decl& decl;
+    Parser& p;
+    void operator()(Decl& d) { lingo_unhandled(d); }
+    void operator()(Super_decl& d) { p.elaborate_hierarchy(decl, d); }
+  };
+  apply(d, fn{decl, *this});
+
+}
+
+void
+Parser::elaborate_hierarchy(Type_decl& decl, Super_decl& d)
+{
+  decl.bases_.push_back(d.type());
+  // TODO: How the heck to I find the declaration corresponding to the type of
+  // the super decl?
+}
 
 } // namespace banjo

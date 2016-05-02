@@ -175,8 +175,7 @@ Parser::super_declaration()
     name = &build.get_id();
   }
 
-  // The rest of this is exactly the same as a variable declarataion
-  // and it even calls on_variable_declaration
+  // The rest of this is almost the same as a variable declaration
 
   match(colon_tok);
 
@@ -587,6 +586,10 @@ Parser::type_declaration()
 
 
   match_if(colon_tok);
+
+  // Parse any specifiers
+  specifier_seq();
+
   Type& kind = next_token_is(lbrace_tok) ? cxt.get_type_type() : unparsed_type_kind();
 
 

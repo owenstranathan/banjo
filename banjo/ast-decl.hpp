@@ -213,6 +213,7 @@ struct Function_decl : Decl
 // TODO: Rename this to Record_decl, and also its corresponding type.
 struct Type_decl : Decl
 {
+
   Type_decl(Name& n, Type& t, Def& d)
     : Decl(n, t), def_(&d)
   { }
@@ -228,6 +229,8 @@ struct Type_decl : Decl
   Def const& definition() const { return *def_; }
   Def&       definition()       { return *def_; }
 
+  Type_list bases_;
+  Type_list derivatives_;
   Type*  kind_;
   Def*   def_;
 };

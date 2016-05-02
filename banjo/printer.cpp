@@ -1491,6 +1491,7 @@ Printer::type_declaration(Type_decl const& d)
   space();
   identifier(d);
   binary_operator(colon_tok);
+  specifier_seq(d.specifiers());
   type(d.type());
   type_definition(d.definition());
 }

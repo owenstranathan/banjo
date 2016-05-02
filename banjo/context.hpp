@@ -59,7 +59,8 @@ struct Context : Builder
 
   Symbol_table syms;   // The symbol table
   Location     input;  // The input location
- 
+
+
   // Scope information
   Scope*       global; // The global scope
   Scope*       scope;  // The current scope

@@ -222,6 +222,10 @@ struct Parser
   Stmt& elaborate_compound_statement(Stmt&);
   Stmt& elaborate_member_statement(Stmt&);
 
+  void elaborate_hierarchy(Type_decl&, Stmt&);
+  void elaborate_hierarchy(Type_decl&, Decl&);
+  void elaborate_hierarchy(Type_decl&, Super_decl&);
+
   // Semantics actions
 
   // Identifiers
