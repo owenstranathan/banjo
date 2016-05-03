@@ -130,6 +130,7 @@ struct Parser
   // Specifiers
   Specifier_set specifier_seq();
   Specifier_set parameter_specifier_seq();
+  Specifier_set class_specifier_seq();
 
   // Variables
   Decl& variable_declaration();

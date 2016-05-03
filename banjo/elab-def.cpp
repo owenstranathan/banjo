@@ -243,7 +243,7 @@ Parser::elaborate_hierarchy(Type_decl& decl, Super_decl& d)
 {
   decl.bases_.push_back(d.type());
   // TODO: How the heck to I find the declaration corresponding to the type of the super decl?
-
+  //std::cout << d.type() << '\n' << decl.type() << '\n';
 }
 
 } // namespace banjo

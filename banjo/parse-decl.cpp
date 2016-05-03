@@ -104,6 +104,22 @@ Parser::specifier_seq()
   lingo_unreachable();
 }
 
+Specifier_set
+Parser::class_specifier_seq()
+{
+  decl_specs() = Specs();
+  while(true)
+  {
+    switch(lookahead()) {
+      case virtual_tok:
+        accept_specifier(*this, virtual_spec);
+        break;
+      default:
+        return decl_specs();
+    }
+  }
+  lingo_unreachable();
+}
 
 // Parse a sequence of parameter specifiers.
 //
@@ -624,12 +640,11 @@ Parser::class_declaration()
 
   // NOTE: The colon is made optional.
   match_if(colon_tok);
-
   // Parse any specifiers
-  specifier_seq();
-
+  class_specifier_seq();
   // Match the kind of the class.
   Type* kind;
+
   if (next_token_is(lbrace_tok))
     kind = &cxt.get_type_type();
   else
