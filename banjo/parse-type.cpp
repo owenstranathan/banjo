@@ -42,12 +42,6 @@ Parser::suffix_type()
 //    unary-type:
 //      unary-type
 //      '&' unary-type
-//      '&&' unary-type
-//      'in' unary-type
-//      'out' unary-type
-//      'mutable' unary-type
-//      'consume' unary-type
-//      'forward' unary-type
 //
 // FIXME: Rvalue references have not been implemented. Do we actually
 // need them, or can we get by with parameter passing types.
@@ -64,31 +58,6 @@ Parser::prefix_type()
       accept();
       Type& t = unary_type();
       return on_reference_type(t);
-    }
-    case in_tok: {
-      accept();
-      Type& t = unary_type();
-      return on_in_type(t);
-    }
-    case out_tok: {
-      accept();
-      Type& t = unary_type();
-      return on_out_type(t);
-    }
-    case mutable_tok: {
-      accept();
-      Type& t = unary_type();
-      return on_mutable_type(t);
-    }
-    case forward_tok: {
-      accept();
-      Type& t = unary_type();
-      return on_forward_type(t);
-    }
-    case consume_tok: {
-      accept();
-      Type& t = unary_type();
-      return on_consume_type(t);
     }
     default:
       break;
@@ -146,16 +115,28 @@ Parser::postfix_type()
 
 // Parse an array of slice type.
 Type&
- Parser::array_type(Type& t)
- {
-   match(lbracket_tok);
-   if (match_if(rbracket_tok))
-      return on_slice_type(t);
-   Expr& e = expression();
-   match(rbracket_tok);
-   return on_array_type(t, e);
- }
+Parser::array_type(Type& t)
+{
+ //match(lbracket_tok);
+ if (match_if(rbracket_tok))
+    return on_slice_type(t);
+ Expr& e = expression();
+ match(rbracket_tok);
+ return on_array_type(t, e);
+}
+
  
+Type&
+Parser::tuple_type()
+{  
+  Type_list types;
+  match(lbrace_tok);
+  if (lookahead() != rbrace_tok)
+    types = type_list();
+  match(rbrace_tok);
+  return on_tuple_type(types);
+}
+
 
 // Parse a primary type.
 //
@@ -171,6 +152,7 @@ Type&
 //      decltype-type
 //      function-type
 //      '( unary-type )'
+//      '{ type-list }'
 //
 // FIXME: Design a better integer and FP type suite.
 Type&
@@ -199,8 +181,8 @@ Parser::primary_type()
     case decltype_tok:
       return decltype_type();
 
-    case type_tok:
-      return on_type_type(accept());
+    case class_tok:
+      return on_class_type(accept());
 
     case lparen_tok: {
       // FIXME: We shouldn't need a tentative parse for this.
@@ -208,6 +190,9 @@ Parser::primary_type()
         return *t;
       return grouped_type();
     }
+    
+    case lbrace_tok:
+      return tuple_type();
 
     default:
       return id_type();

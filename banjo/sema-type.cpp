@@ -13,7 +13,7 @@ namespace banjo
 
 
 Type&
-Parser::on_type_type(Token)
+Parser::on_class_type(Token)
 {
   return build.get_type_type();
 }
@@ -99,6 +99,12 @@ Parser::on_array_type(Type& t, Expr& e)
   return make_array_type(cxt, t, e);
 }
 
+Type&
+Parser::on_tuple_type(Type_list& t)
+{
+  return make_tuple_type(cxt, t);
+}
+
 
 Type&
 Parser::on_slice_type(Type& t)
@@ -111,41 +117,6 @@ Type&
 Parser::on_reference_type(Type& t)
 {
   return make_reference_type(cxt, t);
-}
-
-
-Type&
-Parser::on_in_type(Type& t)
-{
-  return make_in_type(cxt, t);
-}
-
-
-Type&
-Parser::on_out_type(Type& t)
-{
-  return make_out_type(cxt, t);
-}
-
-
-Type&
-Parser::on_mutable_type(Type& t)
-{
-  return make_mutable_type(cxt, t);
-}
-
-
-Type&
-Parser::on_consume_type(Type& t)
-{
-  return make_consume_type(cxt, t);
-}
-
-
-Type&
-Parser::on_forward_type(Type& t)
-{
-  return make_forward_type(cxt, t);
 }
 
 
