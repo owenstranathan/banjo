@@ -1458,6 +1458,18 @@ Printer::function_definition(Defaulted_def const&)
   token(default_tok);
 }
 
+void
+Printer::type_list(Type_list const& t)
+{
+
+  std::cout << "[";
+  for(auto && a : t)
+  {
+    type(a);
+    std::cout << ", ";
+  }
+  std::cout << "]";
+}
 
 void
 Printer::class_declaration(Class_decl const& d)
@@ -1468,6 +1480,12 @@ Printer::class_declaration(Class_decl const& d)
   binary_operator(colon_tok);
   specifier_seq(d.specifiers());
   type(d.type());
+  std::cout << '\n';
+  std::cout << "bases: ";
+  type_list(d.bases_);
+  std::cout << '\n';
+  std::cout << "derivatives: ";
+  type_list(d.derivatives_);
   class_definition(d.definition());
 }
 

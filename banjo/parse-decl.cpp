@@ -254,7 +254,6 @@ Parser::variable_declaration()
   return on_variable_declaration(name, type);
 }
 
-
 // Return an unparsed type for the variable's type specification.
 Type&
 Parser::unparsed_variable_type()
@@ -640,8 +639,11 @@ Parser::class_declaration()
 
   // NOTE: The colon is made optional.
   match_if(colon_tok);
+
+  // TODO: Presently no shits are given about class specifiers
   // Parse any specifiers
-  class_specifier_seq();
+  //class_specifier_seq();
+
   // Match the kind of the class.
   Type* kind;
 
@@ -650,7 +652,7 @@ Parser::class_declaration()
   else
     kind = &unparsed_class_kind();
 
-  // Match tghe body.
+  // Match the body.
   Stmt& body = unparsed_class_body();
 
   return on_class_declaration(name, *kind, body);

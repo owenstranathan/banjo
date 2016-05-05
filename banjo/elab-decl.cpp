@@ -41,6 +41,7 @@ Parser::elaborate_declaration(Decl& d)
     void operator()(Decl& d)          { lingo_unhandled(d); }
     void operator()(Object_decl& d)   { p.elaborate_object_declaration(d); }
     void operator()(Function_decl& d) { p.elaborate_function_declaration(d); }
+    void operator()(Super_decl& d)    { p.elaborate_super_declaration(d); }
     void operator()(Class_decl& d)    { p.elaborate_class_declaration(d); }
   };
   apply(d, fn{*this});
@@ -96,6 +97,17 @@ void
 Parser::elaborate_class_declaration(Class_decl& d)
 {
   d.kind_ = &elaborate_type(d.kind());
+  //std::cout << d.kind();
+}
+
+void
+Parser::elaborate_super_declaration(Super_decl& d)
+{
+  d.type_ = &elaborate_type(d.type());
+  if(!is<Class_type>(d.type_))
+  {
+    lingo_alert(false, "A class cannot inherit from non-class types!");
+  }
 }
 
 

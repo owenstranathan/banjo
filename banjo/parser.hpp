@@ -197,6 +197,7 @@ struct Parser
   void elaborate_function_declaration(Function_decl&);
   void elaborate_parameter_declaration(Object_parm&);
   void elaborate_class_declaration(Class_decl&);
+  void elaborate_super_declaration(Super_decl&);
   Type& elaborate_type(Type&);
 
   // Overloading
@@ -226,9 +227,9 @@ struct Parser
   Stmt& elaborate_compound_statement(Stmt&);
   Stmt& elaborate_member_statement(Stmt&);
 
-  void elaborate_hierarchy(Type_decl&, Stmt&);
-  void elaborate_hierarchy(Type_decl&, Decl&);
-  void elaborate_hierarchy(Type_decl&, Super_decl&);
+  void elaborate_hierarchy(Class_decl&, Decl&);
+  void elaborate_hierarchy(Class_decl&, Super_decl&);
+  void elaborate_hierarchy(Class_decl&, Stmt&);
 
   // Semantics actions
 

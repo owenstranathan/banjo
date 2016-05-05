@@ -181,6 +181,7 @@ struct Printer
   void class_declaration(Class_decl const&);
   void class_definition(Def const&);
   void class_definition(Class_def const&);
+  void type_list(Type_list const&);
 
   // Concepts
   void concept_declaration(Concept_decl const&);
