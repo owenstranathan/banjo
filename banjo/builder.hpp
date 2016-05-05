@@ -8,6 +8,10 @@
 #include "prelude.hpp"
 #include "token.hpp"
 #include "language.hpp"
+#include "ast-stmt.hpp"
+#include "ast-def.hpp"
+#include "ast-decl.hpp"
+#include "ast-type.hpp"
 
 #include <lingo/token.hpp>
 
@@ -59,8 +63,6 @@ struct Builder
   Function_type&  get_function_type(Decl_list const&, Type&);
   Function_type&  get_function_type(Type_list const&, Type&);
   Qualified_type& get_qualified_type(Type&, Qualifier_set);
-  Class_type&     get_class_type(Type_decl&);
-  Auto_type&      get_auto_type(Type_decl&);
   Qualified_type& get_const_type(Type&);
   Qualified_type& get_volatile_type(Type&);
   Pointer_type&   get_pointer_type(Type&);
@@ -70,6 +72,10 @@ struct Builder
   Slice_type&     get_slice_type(Type&);
   Dynarray_type&  get_dynarray_type(Type&, Expr&);
   Pack_type&      get_pack_type(Type&);
+  Class_type&     get_class_type(Type_decl&);
+  Typename_type&  get_typename_type(Type_decl&);
+  Coroutine_type& get_coroutine_type(Type_decl&);
+  Auto_type&      get_auto_type(Type_decl&);
   Type_type&      get_type_type();
 
   // Placeholder types
@@ -118,6 +124,7 @@ struct Builder
   Bit_not_expr&   make_bit_not(Type&, Expr&);
   Call_expr&      make_call(Type&, Expr&, Expr_list const&);
   Call_expr&      make_call(Type&, Function_decl&, Expr_list const&);
+  Tuple_expr&     make_tuple_expr(Type&, Expr_list const&);
   Requires_expr&  make_requires(Decl_list const&, Decl_list const&, Req_list const&);
   Synthetic_expr& synthesize_expression(Decl&);
 
@@ -127,6 +134,7 @@ struct Builder
   Compound_stmt&    make_compound_statement(Stmt_list&&);
   Empty_stmt&       make_empty_statement();
   Return_stmt&      make_return_statement(Expr&);
+  Yield_stmt&       make_yield_statement(Expr&);
   If_then_stmt&     make_if_statement(Expr&, Stmt&);
   If_else_stmt&     make_if_statement(Expr&, Stmt&, Stmt&);
   While_stmt&       make_while_statement(Expr&, Stmt&);
@@ -143,6 +151,9 @@ struct Builder
   // Functions
   Function_decl&  make_function_declaration(Name&, Decl_list const&, Type&, Expr&);
   Function_decl&  make_function_declaration(Name&, Decl_list const&, Type&, Stmt&);
+
+  // Coroutine
+  Coroutine_decl& make_coroutine_declaration(Name&, Decl_list&, Type&, Stmt&);
 
   // Types and members
   Class_decl&     make_class_declaration(Name&, Type&, Stmt&);
@@ -175,7 +186,12 @@ struct Builder
   Defaulted_def&  make_defaulted_definition();
   Expression_def& make_expression_definition(Expr&);
   Function_def&   make_function_definition(Stmt&);
+
+  // Coroutines use function defs
+  Function_def&  make_coroutine_definition(Stmt&);
+
   Class_def&      make_class_definition(Stmt&);
+
   Concept_def&    make_concept_definition(Req_list const&);
 
   // Parameters

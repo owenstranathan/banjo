@@ -98,6 +98,7 @@ struct Parser
   Expr& unary_expression();
   Expr& postfix_expression();
   Expr& call_expression(Expr&);
+  Expr& tuple_expression();
   Expr& dot_expression(Expr&);
   Expr& subscript_expression(Expr&);
   Expr& primary_expression();
@@ -113,6 +114,7 @@ struct Parser
   Stmt& member_statement();
   Stmt& empty_statement();
   Stmt& return_statement();
+  Stmt& yield_statement();
   Stmt& if_statement();
   Stmt& while_statement();
   Stmt& break_statement();
@@ -141,9 +143,11 @@ struct Parser
   Expr& equal_initializer(Decl&);
   Expr& paren_initializer(Decl&);
   Expr& brace_initializer(Decl&);
+  
 
   // Functions
   Decl& function_declaration();
+  Decl& coroutine_declaration();
   Decl_list parameter_clause();
   Decl_list parameter_list();
   Decl& parameter_declaration();
@@ -198,6 +202,7 @@ struct Parser
   void elaborate_parameter_declaration(Object_parm&);
   void elaborate_class_declaration(Class_decl&);
   void elaborate_super_declaration(Super_decl&);
+  void elaborate_coroutine_declaration(Coroutine_decl&);
   Type& elaborate_type(Type&);
 
   // Overloading
@@ -223,6 +228,7 @@ struct Parser
   void elaborate_function_definition(Function_decl&, Function_def&);
   void elaborate_class_definition(Class_decl&);
   void elaborate_class_definition(Class_decl&, Class_def&);
+  void elaborate_coroutine_definition(Coroutine_decl&);
   Expr& elaborate_expression(Expr&);
   Stmt& elaborate_compound_statement(Stmt&);
   Stmt& elaborate_member_statement(Stmt&);
@@ -292,6 +298,7 @@ struct Parser
   Expr& on_neg_expression(Token, Expr&);
   Expr& on_pos_expression(Token, Expr&);
   Expr& on_call_expression(Expr&, Expr_list&);
+  Expr& on_tuple_expression(Expr_list&);
   Expr& on_dot_expression(Expr&, Name&);
   Expr& on_id_expression(Name&);
   Expr& on_boolean_literal(Token, bool);
@@ -304,6 +311,9 @@ struct Parser
   Stmt& on_translation_statement(Stmt_list&&);
   Stmt& on_member_statement(Stmt_list&&);
   Stmt& on_compound_statement(Stmt_list&&);
+  Stmt& on_yield_statement(Token, Expr&);
+
+
   Stmt& on_empty_statement();
   Stmt& on_return_statement(Token, Expr&);
   Stmt& on_if_statement(Expr&, Stmt&);
@@ -329,6 +339,9 @@ struct Parser
 
   // Type declarations
   Decl& on_class_declaration(Name&, Type&, Stmt&);
+
+  // Coroutine declarations
+  Decl& on_coroutine_declaration(Name&, Decl_list&, Type&, Stmt&);
 
   // Concept declarations
   Decl& on_concept_declaration(Token, Name&, Decl_list&);
@@ -406,8 +419,6 @@ struct Parser
   // Scope management
   Scope& current_scope();
 
-  // Declarations
-  Decl& templatize_declaration(Decl&);
 
   // Maintains the current parse state. This is used to provide context for
   // various parsing routines, and is used by the trial parser for caching
@@ -415,15 +426,13 @@ struct Parser
   struct State
   {
     State()
-      : braces(), specs(), template_parms(), template_cons()
+      : braces(), specs()
     { }
 
     Braces  braces;
     Specs   specs;
 
-    // FIXME: Do I need these?
-    Decl_list* template_parms; // The current (innermost) template parameters
-    Expr*      template_cons;  // The current (innermost) template constraints
+    Decl_list implicit_parms; // Implicit template parameters
   };
 
   struct Parsing_template;
@@ -464,57 +473,9 @@ Parser::take_decl_specs()
 }
 
 
-// An RAII helper that manages parsing state related to the parsing
-// of a declaration nested within a template.
-//
-// TODO: This can probably be removed and templatize_declaration could
-// be implemented in terms of the template scope.
-struct Parser::Parsing_template
-{
-  Parsing_template(Parser&, Decl_list*);
-  Parsing_template(Parser&, Decl_list*, Expr*);
-  ~Parsing_template();
-
-  Parser&    parser;
-  Decl_list* saved_parms;
-  Expr*      saved_cons;
-};
-
-
-inline
-Parser::Parsing_template::Parsing_template(Parser& p, Decl_list* ps)
-  : parser(p)
-  , saved_parms(p.state.template_parms)
-  , saved_cons(p.state.template_cons)
-{
-  parser.state.template_parms = ps;
-  parser.state.template_cons = nullptr;
-}
-
-
-inline
-Parser::Parsing_template::Parsing_template(Parser& p, Decl_list* ps, Expr* c)
-  : parser(p)
-  , saved_parms(p.state.template_parms)
-  , saved_cons(p.state.template_cons)
-{
-  parser.state.template_parms = ps;
-  parser.state.template_cons = c;
-}
-
-
-inline
-Parser::Parsing_template::~Parsing_template()
-{
-  parser.state.template_parms = saved_parms;
-  parser.state.template_cons = saved_cons;
-}
-
-
-
 // The trial parser provides recovery information for the parser
 // class. If the trial parse fails, then the state of the underlying
-// parser is rewound to the state cached bythe trial parser.
+// parser is rewound to the state cached by the trial parser.
 //
 // TODO: Can we automatically detect failures without needing
 // an explicit indication of failure?

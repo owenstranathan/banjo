@@ -184,7 +184,6 @@ struct Function_decl : Decl
 };
 
 
-
 // Represents the declaration of a user-defined type. This is the base
 // class of class declarations and type parameters.
 struct Type_decl : Decl
@@ -218,10 +217,37 @@ struct Class_decl : Type_decl
   Def*   def_;
 };
 
+struct Coroutine_decl :Decl
+{
+  Coroutine_decl(Name& n, Type& t, Decl_list const& p, Def& d)
+    : Decl(n, t), ret_(&t), def_(&d), parms_(p)
+  { }
+
+  void accept(Visitor& v) const { v.visit(*this); }
+  void accept(Mutator& v)       { v.visit(*this); }
+
+
+  Def const& definition() const { return *def_; }
+  Def&       definition()       { return *def_; }
+
+  // Returns the return type of the coroutine.
+  Type const& return_type() const { return *ret_; };
+  Type&       return_type()       { return *ret_; }
+
+  // Returns the list of parameter declarations for the coroutine.
+  Decl_list const& parameters() const { return parms_; }
+  Decl_list&       parameters()       { return parms_; }
+
+  Type* ret_;
+  Def* def_;
+  Decl_list parms_;
+
+};
 
 // Declares a field (member variable) of a class. This stores the index 
 // of the field within  the class, which is used to support code generation 
 // and compile-time evaluation.
+
 struct Field_decl : Variable_decl
 {
   using Variable_decl::Variable_decl;
@@ -588,6 +614,6 @@ apply(Decl& d, F fn)
 }
 
 
-} // namesapce banjo
+} // namespace banjo
 
 #endif

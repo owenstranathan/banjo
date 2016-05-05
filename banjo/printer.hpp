@@ -6,6 +6,8 @@
 
 #include "token.hpp"
 #include "language.hpp"
+#include "ast-stmt.hpp"
+#include "ast-decl.hpp"
 
 #include <iosfwd>
 
@@ -82,6 +84,7 @@ struct Printer
   void primary_type(Tuple_type const&);
   void primary_type(Type_type const&);
   void id_type(Class_type const&);
+  void id_type(Typename_type const&);
   void grouped_type(Type const&);
 
   // Expressions
@@ -99,7 +102,8 @@ struct Printer
   void multiplicative_expression(Expr const&);
   void unary_expression(Expr const&);
   void postfix_expression(Expr const&);
-  void postfix_expression(Call_expr const&);
+  void postfix_expression(Call_expr const&);  
+  void postfix_expression(Tuple_expr const&);
   void postfix_expression(Dot_expr const&);
   void postfix_expression(Value_conv const&);
   void postfix_expression(Qualification_conv const&);
@@ -135,6 +139,7 @@ struct Printer
   void member_statement(Member_stmt const&);
   void compound_statement(Compound_stmt const&);
   void return_statement(Return_stmt const&);
+  void yield_statement(Yield_stmt const&);
   void if_statement(If_then_stmt const&);
   void if_statement(If_else_stmt const&);
   void while_statement(While_stmt const&);
@@ -182,6 +187,9 @@ struct Printer
   void class_definition(Def const&);
   void class_definition(Class_def const&);
   void type_list(Type_list const&);
+
+  // Coroutine
+  void coroutine_delcaration(Coroutine_decl const&);
 
   // Concepts
   void concept_declaration(Concept_decl const&);

@@ -234,22 +234,6 @@ Builder::get_decltype_type(Expr&)
 }
 
 
-// Returns class type for the given type declaration.
-Class_type&
-Builder::get_class_type(Type_decl& d)
-{
-  return make<Class_type>(d);
-}
-
-
-// Returns the auto type corresponding to the given declaration.
-Auto_type&
-Builder::get_auto_type(Type_decl& d)
-{
-  return make<Auto_type>(d);
-}
-
-
 Function_type&
 Builder::get_function_type(Decl_list const& ps, Type& r)
 {
@@ -268,7 +252,11 @@ Builder::get_function_type(Type_list const& ts, Type& r)
   return make<Function_type>(ts, r);
 }
 
-
+Coroutine_type&
+Builder::get_coroutine_type(Type_decl& d)
+{
+  return make<Coroutine_type>(d);
+}
 // TODO: Do not build qualified types for functions or arrays.
 // Is that a hard error, or do we simply fold the const into
 // the return type and/or element type?
@@ -345,12 +333,45 @@ Builder::get_pack_type(Type& t)
   return make<Pack_type>(t);
 }
 
+// Returns class type for the given type declaration.
+Class_type&
+Builder::get_class_type(Type_decl& d)
+{
+  return make<Class_type>(d);
+}
+
+
+// Returns the type corresponding to the declaration of a type parameter.
+Typename_type&
+Builder::get_typename_type(Type_decl& d)
+{
+  return make<Typename_type>(d);
+}
+
+
+// Returns the auto type corresponding to the given declaration.
+Auto_type&
+Builder::get_auto_type(Type_decl& d)
+{
+  return make<Auto_type>(d);
+}
+
+
 
 Type_type&
 Builder::get_type_type()
 {
   static Type_type t;
   return t;
+}
+
+
+// Synthesize a type from the given parameter. This is used to generate
+// fake types corresponding to type parameters.
+Synthetic_type&
+Builder::synthesize_type(Decl& d)
+{
+  return make<Synthetic_type>(d);
 }
 
 
@@ -366,15 +387,6 @@ Builder::make_auto_type()
   return get_auto_type(d);
 }
 
-
-
-// Synthesize a type from the given parameter. This is used to generate
-// fake types corresponding to type parameters.
-Synthetic_type&
-Builder::synthesize_type(Decl& d)
-{
-  return make<Synthetic_type>(d);
-}
 
 
 // -------------------------------------------------------------------------- //
@@ -669,6 +681,12 @@ Builder::make_call(Type& t, Function_decl& f, Expr_list const& a)
   return make_call(t, make_reference(f), a);
 }
 
+Tuple_expr&
+Builder::make_tuple_expr(Type& t, Expr_list const& l)
+{
+  return make<Tuple_expr>(t,l);
+}
+
 
 Requires_expr&
 Builder::make_requires(Decl_list const& tps, Decl_list const& ps, Req_list const& rs)
@@ -721,6 +739,11 @@ Builder::make_return_statement(Expr& e)
   return make<Return_stmt>(e);
 }
 
+Yield_stmt&
+Builder::make_yield_statement(Expr& e)
+{
+  return make<Yield_stmt>(e);
+}
 
 If_then_stmt&
 Builder::make_if_statement(Expr& e, Stmt& s)
@@ -871,6 +894,14 @@ Builder::make_class_declaration(Name& n, Type& t, Stmt& s)
 {
   Def& d = make_class_definition(s);
   return make<Class_decl>(n, t, d);
+}
+
+
+Coroutine_decl&
+Builder::make_coroutine_declaration(Name&n, Decl_list&p, Type& t, Stmt& s)
+{
+  Def& d = make_coroutine_definition(s);
+  return make<Coroutine_decl>(n,t,p,d);
 }
 
 
@@ -1057,6 +1088,11 @@ Builder::make_class_definition(Stmt& s)
   return make<Class_def>(s);
 }
 
+Function_def&
+Builder::make_coroutine_definition(Stmt& s)
+{
+  return make<Function_def>(s);
+}
 
 Concept_def&
 Builder::make_concept_definition(Req_list const& ss)
