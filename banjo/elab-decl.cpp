@@ -43,7 +43,7 @@ Parser::elaborate_declaration(Decl& d)
     void operator()(Function_decl& d) { p.elaborate_function_declaration(d); }
     void operator()(Super_decl& d)    { p.elaborate_super_declaration(d); }
     void operator()(Class_decl& d)    { p.elaborate_class_declaration(d); }
-    void operator()(Coroutine_decl& d) { p.elaborate_coroutine_declaration(d); }
+    void operator()(Coroutine_decl& d){ p.elaborate_coroutine_declaration(d); }
   };
   apply(d, fn{*this});
 }
