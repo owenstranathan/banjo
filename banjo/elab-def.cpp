@@ -178,7 +178,7 @@ Parser::elaborate_class_definition(Class_decl& decl, Class_def& def)
   Stmt& stmt = elaborate_member_statement(def.body());
 
   // Build the class hierarchy map
-  elaborate_hierarchy(decl, stmt);
+  elaborate_hierarchy(decl, as<Member_stmt>(stmt));
 
   // Update the definition with the new statement. We don't need
   // to update the declaration.
@@ -225,49 +225,29 @@ Parser::elaborate_member_statement(Stmt& s)
 }
 
 void
-Parser::elaborate_hierarchy(Class_decl& decl, Stmt &s)
+Parser::elaborate_hierarchy(Class_decl& decl, Member_stmt &s)
 {
-  Member_stmt* s1 = &cast<Member_stmt>(s);
 
-  for(auto && stmt : s1->stmts )
+  for(auto && stmt : s.stmts )
   {
-    struct fn
+    if(Declaration_stmt * decl_stmt = &as<Declaration_stmt>(stmt))
     {
-      Class_decl& decl;
-      Parser& p;
-      void operator()(Stmt& st) { lingo_unhandled(st); }
-      void operator()(Declaration_stmt& st) { p.elaborate_hierarchy(decl, st.declaration() ); }
-    };
-    apply(stmt, fn{decl, *this});
+      if(Super_decl* super = &as<Super_decl>(decl_stmt->declaration()))
+      {
+        decl.bases_.push_back(super->type());
+
+        Class_type * type = &cast<Class_type>(super->type());
+        Class_decl * class_decl = cast<Class_decl>(type->decl_);
+
+        class_decl->derivatives_.push_back(build.get_class_type(decl));
+      }
+    }
+
+
 
   }
 }
 
-void
-Parser::elaborate_hierarchy(Class_decl& decl, Decl& d)
-{
-  struct fn
-  {
-    Class_decl& decl;
-    Parser& p;
-    void operator()(Decl& d) { lingo_unhandled(d); }
-    void operator()(Super_decl& d) { p.elaborate_hierarchy(decl, d); }
-  };
-  apply(d, fn{decl, *this});
 
-}
-
-void
-Parser::elaborate_hierarchy(Class_decl& decl, Super_decl& d)
-{
-  decl.bases_.push_back(d.type());
-
-  Class_type * t = &cast<Class_type>(d.type());
-
-  Class_decl * c_decl = cast<Class_decl>(t->decl_);
-
-  c_decl->derivatives_.push_back(build.get_class_type(decl));
-
-}
 
 } // namespace banjo
