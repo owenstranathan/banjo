@@ -66,8 +66,50 @@ Parser::elaborate_function_declaration(Function_decl& d)
   // Elaborate the type of each parameter in turn. Note that this does
   // not declare the parameters, it just checks their types.
   Decl_list& parms = d.parameters();
-  for (Decl& d : parms)
-    elaborate_parameter_declaration(cast<Object_parm>(d));
+
+  for (Decl& parm_decl : parms)
+    elaborate_parameter_declaration(cast<Object_parm>(parm_decl));
+
+  // Collect Open-Methods
+  for (Decl& parm_decl : parms)
+  {
+    if (parm_decl.specifiers() == virtual_spec) {
+      Simple_id & id = cast<Simple_id>(d.name());
+      if(cxt.bom.find(id.symbol().spelling()) == cxt.bom.end())
+      {
+        cxt.bom[id.symbol().spelling()] = &d;
+      }
+      cxt.omd[id.symbol().spelling()].push_back(&d);
+      break;
+    }
+  }
+  for(auto && x : cxt.bom)
+  {
+    std::cout << "Base Methods:" << std::endl;
+    std::cout << x.first << " : ";
+    std::cout << "(";
+    for(auto & a : x.second->parms_)
+    {
+      Simple_id & id = cast<Simple_id>(a.name());
+      std::cout << id.symbol().spelling() << " : " << a.type() << ", ";
+    }
+    std::cout << ")" << '\n';
+  }
+  for(auto && x : cxt.omd)
+  {
+    std::cout << "All Methods:" << std::endl;
+    for(auto & a : x.second)
+    {
+      std::cout << x.first << " : ";
+      std::cout << "(";
+      for(auto& b : a->parms_)
+      {
+        Simple_id & id = cast<Simple_id>(b.name());
+        std::cout << id.symbol().spelling() << " : " << b.type() << ", ";
+      }
+      std::cout << ")" << '\n';
+    }
+  }
 
   // Elaborate the return type.
   //

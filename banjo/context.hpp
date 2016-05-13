@@ -69,6 +69,10 @@ struct Context : Builder
   // Store information for generating unique names.
   int             id;     // The current id counter
 
+  // Base Open Methods
+  std::unordered_map<std::string, Function_decl*> bom;
+  //Open method description
+  std::unordered_map<std::string, std::vector<Function_decl*>> omd;
   // Diagnostic state
   bool diags; // True if diagnostics should be emitted.
 };
